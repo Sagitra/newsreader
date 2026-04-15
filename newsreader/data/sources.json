@@ -1,0 +1,26 @@
+[
+  {
+    "id": "politicaexterior",
+    "name": "Pol\u00edtica Exterior",
+    "url": "https://www.politicaexterior.com/feed/",
+    "type": "rss",
+    "category": "World",
+    "enabled": false
+  },
+  {
+    "id": "dropsite",
+    "name": "Drop Site News",
+    "url": "https://www.dropsitenews.com/feed",
+    "type": "rss",
+    "category": "World",
+    "enabled": true
+  },
+  {
+    "id": "d72d4217",
+    "name": "Global Politics",
+    "url": "https://www.globalpolitics.se/feed/",
+    "type": "rss",
+    "category": "World",
+    "enabled": true
+  }
+]
