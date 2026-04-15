@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>News Reader</title>
+<link rel="manifest" href="/static/manifest.json"/>
+<meta name="theme-color" content="#0f1117"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="News Reader"/>
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png"/>
+<link rel="preconnect" href="https://api.fontshare.com"/>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/static/css/app.css"/>
+</head>
+<body>
+
+<!-- ── App Shell ─────────────────────────────────────────────────────────── -->
+<div id="app">
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+        <path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/>
+      </svg>
+      <span>NewsReader</span>
+    </div>
+
+    <nav class="nav-section">
+      <p class="nav-label">Views</p>
+      <button class="nav-item active" data-view="all">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        All Articles
+      </button>
+      <button class="nav-item" data-view="saved">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+        Saved
+      </button>
+    </nav>
+
+    <nav class="nav-section" id="cat-nav">
+      <p class="nav-label">Categories</p>
+      <!-- injected by JS -->
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-ghost" id="btn-sources">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Manage Sources
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main id="main">
+
+    <!-- Top bar -->
+    <header id="topbar">
+      <div class="search-wrap">
+        <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="search-input" type="text" placeholder="Search articles…" autocomplete="off"/>
+        <button class="search-clear" id="btn-clear-search" aria-label="Clear">✕</button>
+      </div>
+      <div class="topbar-actions">
+        <span id="status-text" class="status-text"></span>
+        <button class="btn-primary" id="btn-refresh">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+          Refresh
+        </button>
+      </div>
+    </header>
+
+    <!-- Article list -->
+    <div id="list-view">
+      <div id="list-header">
+        <span id="article-count" class="muted-text"></span>
+      </div>
+      <div id="article-list">
+        <div class="empty-state" id="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".4"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
+          <p>No articles yet.<br>Click <strong>Refresh</strong> to fetch.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── Reader Modal ───────────────────────────────────────────────────────── -->
+<div id="reader-modal" class="modal hidden">
+  <div class="modal-backdrop" id="reader-backdrop"></div>
+  <div class="modal-panel reader-panel">
+
+    <!-- Toolbar -->
+    <div class="reader-toolbar">
+      <button class="btn-icon" id="reader-close" title="Close (Esc)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+      <div class="reader-meta" id="reader-meta"></div>
+      <div class="reader-actions">
+        <button class="btn-ghost" id="btn-open-browser">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Open
+        </button>
+        <button class="btn-ghost" id="btn-save-article">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+          <span id="save-label">Save</span>
+        </button>
+        <a class="btn-ghost" id="btn-export-md">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export .md
+        </a>
+        <!-- Settings toggle -->
+        <button class="btn-ghost btn-settings" id="btn-reader-settings" title="Reader settings">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          Style
+        </button>
+      </div>
+    </div>
+
+    <!-- Reader settings panel (inline, slides down) -->
+    <div class="reader-settings" id="reader-settings" aria-hidden="true">
+      <div class="settings-group">
+        <span class="settings-label">Font</span>
+        <div class="settings-opts" id="opt-font">
+          <button class="sopt active" data-font="georgia"    title="Serif">Serif</button>
+          <button class="sopt"        data-font="satoshi"    title="Sans-serif">Sans</button>
+          <button class="sopt"        data-font="mono"       title="Monospace">Mono</button>
+        </div>
+      </div>
+      <div class="settings-sep"></div>
+      <div class="settings-group">
+        <span class="settings-label">Size</span>
+        <div class="settings-opts">
+          <button class="sopt sopt-icon" id="btn-size-down" title="Smaller">A−</button>
+          <span id="size-display" class="size-display">16px</span>
+          <button class="sopt sopt-icon" id="btn-size-up"   title="Larger">A+</button>
+        </div>
+      </div>
+      <div class="settings-sep"></div>
+      <div class="settings-group">
+        <span class="settings-label">Theme</span>
+        <div class="settings-opts" id="opt-theme">
+          <button class="sopt sopt-theme active" data-theme="dark"   style="--s:#171614;--t:#CDCCCA" title="Dark">Dark</button>
+          <button class="sopt sopt-theme"        data-theme="sepia"  style="--s:#F5F0E8;--t:#3D2B1F" title="Sepia">Sepia</button>
+          <button class="sopt sopt-theme"        data-theme="light"  style="--s:#FFFFFF;--t:#1A1A1A" title="Light">Light</button>
+          <button class="sopt sopt-theme"        data-theme="forest" style="--s:#1A2420;--t:#C8D8C4" title="Forest">Forest</button>
+          <button class="sopt sopt-theme"        data-theme="paper"  style="--s:#FAF8F4;--t:#2D2520" title="Paper">Paper</button>
+        </div>
+      </div>
+      <div class="settings-sep"></div>
+      <div class="settings-group">
+        <span class="settings-label">Width</span>
+        <div class="settings-opts" id="opt-width">
+          <button class="sopt" data-width="narrow"  title="Narrow">Narrow</button>
+          <button class="sopt active" data-width="normal"  title="Normal">Normal</button>
+          <button class="sopt" data-width="wide"    title="Wide">Wide</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Article content -->
+    <div class="reader-body" id="reader-body">
+      <div class="reader-inner">
+        <h1 id="reader-title"></h1>
+        <div class="reader-tags" id="reader-tags"></div>
+        <div class="reader-divider"></div>
+        <div id="reader-content" class="reader-content">
+          <div class="loader"><div class="spinner"></div><span>Loading article…</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Sources Modal ──────────────────────────────────────────────────────── -->
+<div id="sources-modal" class="modal hidden">
+  <div class="modal-backdrop" id="sources-backdrop"></div>
+  <div class="modal-panel sources-panel">
+    <div class="modal-header">
+      <h2>Manage Sources</h2>
+      <button class="btn-icon" id="sources-close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Add source form -->
+    <div class="add-source-form" id="add-source-form">
+      <h3>Add Source</h3>
+
+      <!-- Step 1: enter a site URL to discover feeds -->
+      <div class="feed-search-wrap">
+        <div class="form-field">
+          <label for="src-site-url">Site URL</label>
+          <div class="feed-search-input-wrap">
+            <input type="url" id="src-site-url" placeholder="e.g. bbc.com or https://bbc.com" autocomplete="off"/>
+            <div class="feed-search-spinner hidden" id="feed-search-spinner">
+              <div class="spinner" style="width:14px;height:14px;border-width:2px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: feed picker -->
+      <div id="feed-picker" class="feed-picker hidden">
+        <p class="feed-picker-label" id="feed-picker-label">Found feeds — pick one:</p>
+        <div id="feed-picker-list" class="feed-picker-list"></div>
+      </div>
+
+      <!-- Step 3: details (pre-filled after pick, editable) -->
+      <div id="src-fields" class="src-fields">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="src-name">Name</label>
+            <input type="text" id="src-name" placeholder="e.g. BBC News" autocomplete="off"/>
+          </div>
+          <div class="form-field">
+            <label for="src-url">Feed URL</label>
+            <input type="url" id="src-url" placeholder="https://feeds.bbci.co.uk/news/rss.xml" autocomplete="off"/>
+          </div>
+          <div class="form-field">
+            <label for="src-category">Category</label>
+            <input type="text" id="src-category" placeholder="Tech, World, Science…" autocomplete="off"/>
+          </div>
+          <div class="form-field">
+            <label for="src-type">Type</label>
+            <select id="src-type">
+              <option value="rss">RSS / Atom feed</option>
+              <option value="scrape">Scrape (site URL)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <span class="form-error" id="src-error"></span>
+          <button class="btn-primary" id="btn-add-source">Add Source</button>
+        </div>
+      </div>
+
+      <!-- Quick-add suggestions -->
+      <div class="quick-add">
+        <div class="quick-add-header">
+          <p class="nav-label">Quick add</p>
+          <div class="tag-input-wrap">
+            <input type="text" id="quick-tag-input" class="tag-input" placeholder="Filter by category…" autocomplete="off"/>
+          </div>
+        </div>
+        <div class="quick-chips" id="quick-chips"></div>
+      </div>
+    </div>
+
+    <!-- Sources list -->
+    <div class="sources-list-wrap">
+      <div id="sources-list" class="sources-list"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/static/sw.js')
+        .catch(e => console.warn('SW registration failed:', e));
+    });
+  }
+</script>
+</body>
+</html>
