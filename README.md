@@ -27,19 +27,6 @@ Opens automatically at `http://localhost:7432`. Press `Ctrl+C` to quit.
 - **Export .md** — download any article as Markdown
 - **Quick-add** — one-click to add popular feeds from source manager
 
-## Good RSS feeds
-
-| Site | RSS URL |
-|------|---------|
-| Hacker News | https://news.ycombinator.com/rss |
-| BBC World | https://feeds.bbci.co.uk/news/rss.xml |
-| Ars Technica | https://feeds.arstechnica.com/arstechnica/index |
-| The Verge | https://www.theverge.com/rss/index.xml |
-| Wired | https://www.wired.com/feed/rss |
-| Reuters | https://feeds.reuters.com/reuters/topNews |
-| NASA | https://www.nasa.gov/rss/dyn/breaking_news.rss |
-| SVT Nyheter | https://www.svt.se/nyheter/rss.xml |
-
 ## Data
 
 Stored in `data/` (JSON files, local only):
